@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author jcvsa
  */
-public class IMessage implements Serializable {
+public class Message implements Serializable {
     
     private static final long serialVersionUID = 687991492884005033L;
     
@@ -18,7 +18,7 @@ public class IMessage implements Serializable {
     private final String sender;
     private final String message; 
     
-    private IMessage(String timeSent, String sender, String message){ 
+    public Message(String timeSent, String sender, String message){ 
         this.timeSent = timeSent; 
         this.sender = sender; 
         this.message = message; 

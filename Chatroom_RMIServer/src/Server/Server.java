@@ -1,12 +1,14 @@
+package Server;
 
+import Remote.IClient;
 import Remote.IConnections;
-import Remote.IMessage;
-import java.net.MalformedURLException;
-import java.rmi.Naming;
+import Remote.Message;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 /*
@@ -16,7 +18,9 @@ import java.util.ArrayList;
 public class Server implements IConnections {
 
     private final ArrayList<String> userNames;
-    private ArrayList<IMessage> userMessages;
+    private ArrayList<Message> userMessages;
+    
+    private static Registry registry;
 
     public Server() {
         this.userNames = new ArrayList<>();
@@ -24,12 +28,14 @@ public class Server implements IConnections {
     }
 
     @Override
-    public boolean isConnected(String name) throws RemoteException {
+    public boolean isConnected(String name, IClient stub) throws RemoteException {
         if (userNames.contains(name)) {
             return false;
         }
 
         System.out.println("User connection: " + name);
+        
+        registry.rebind("/client/" + name, stub);
         userNames.add(name);
         return true;
     }
@@ -46,12 +52,22 @@ public class Server implements IConnections {
     }
 
     @Override
-    public ArrayList<IMessage> getUserMessages() throws RemoteException {
+    public String addMessage(String sender, String message) throws RemoteException {
+        String DATE_FORMAT = "HH:mm:ss";
+        String time = LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern(DATE_FORMAT));
+        this.userMessages.add(new Message(time, sender, message));
+
+        return time;
+    }
+
+    @Override
+    public ArrayList<Message> getUserMessages() throws RemoteException {
         return this.userMessages;
     }
 
     @Override
-    public void setClientMessages(ArrayList<IMessage> messages) throws RemoteException {
+    public void setClientMessages(ArrayList<Message> messages) throws RemoteException {
         this.userMessages = messages;
     }
 
@@ -70,8 +86,8 @@ public class Server implements IConnections {
             }
 
             IConnections stub = (IConnections) UnicastRemoteObject.exportObject(remoteObject, 0);
-            Registry registry = LocateRegistry.getRegistry();
-            registry.rebind("ChatRoom", stub);
+            registry = LocateRegistry.getRegistry();
+            registry.rebind("/server", stub);
 
             System.out.println("Names bound in RMI registry");
 
@@ -81,6 +97,13 @@ public class Server implements IConnections {
 
         System.out.println("Server ready...");
 
+    }
+
+    
+    @Override
+    public String appLaunchNotification() throws RemoteException {
+        System.out.println("An app connected");
+        return "Application launched..";
     }
 
 }
