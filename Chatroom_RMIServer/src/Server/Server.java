@@ -33,13 +33,15 @@ public class Server implements IConnections {
     }
 
     @Override
-    public boolean isConnected(String name, IClient stub) throws RemoteException {
+    public boolean connectUser(String name, IClient stub) throws RemoteException {
         if (userNames.contains(name)) {
             return false;
         }
 
         System.out.println("User connection: " + name);
 
+        //binds the client to the registry with the stub retrieved from the client
+        //and add it to the list of user names
         registry.rebind("/client/" + name, stub);
 
         userNames.add(name);
@@ -60,7 +62,7 @@ public class Server implements IConnections {
     @Override
     public String addMessage(String sender, String message) throws RemoteException {
         String DATE_FORMAT = "HH:mm:ss";
-        String time = LocalDateTime.now()
+                String time = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern(DATE_FORMAT));
         this.userMessages.add(new Message(time, sender, message));
 
@@ -76,11 +78,6 @@ public class Server implements IConnections {
     @Override
     public ArrayList<Message> getUserMessages() throws RemoteException {
         return this.userMessages;
-    }
-
-    @Override
-    public void setClientMessages(ArrayList<Message> messages) throws RemoteException {
-        this.userMessages = messages;
     }
 
     /**

@@ -20,11 +20,15 @@ public class Client implements IClient, Serializable {
     private static final long serialVersionUID = 4539829837598745973L;
     public static final String REGISTRY_URL = "localhost";
 
+    //current state of the client
     private String name;
     private boolean isConnected;
+
+    //remote objects
     private Registry registry;
     private IConnections remoteProxy;
 
+    //app object used to connect to the interface and print messages
     private App app;
 
     public Client() {
@@ -48,6 +52,7 @@ public class Client implements IClient, Serializable {
     }
 
     /**
+     * connects the client to the interface
      *
      * @param app
      */
@@ -66,14 +71,17 @@ public class Client implements IClient, Serializable {
 
         try {
 
+            //create a client stub to send back to the server so that it
+            //can bind the client to the rmi registry
             IClient stub = (IClient) UnicastRemoteObject.exportObject(this, 0);
 
-            if (!this.remoteProxy.isConnected(name, stub)) {
+            if (!this.remoteProxy.connectUser(name, stub)) {
                 this.app.postMessage("[Server]: Error, this name is not available.\n");
 
                 return false;
             }
 
+            //update client state
             this.name = name;
             this.isConnected = true;
 
@@ -85,7 +93,10 @@ public class Client implements IClient, Serializable {
             return false;
         }
 
+        //send to all clients
         broadcastConnection();
+
+        //retrieve messages sent by other clients
         getMessageHistory();
 
         this.app.postMessage("[Server]: You are connected as \"" + this.name + "\".\n");
@@ -101,7 +112,7 @@ public class Client implements IClient, Serializable {
         this.app.postMessage("[Server]: disconnecting...\n");
 
         try {
-            // Try to unbind the user on the server side.
+            // unbind the user on the server side.
             this.registry.unbind("/client/" + this.name);
             UnicastRemoteObject.unexportObject(this, true);
 
@@ -115,9 +126,10 @@ public class Client implements IClient, Serializable {
                     + "Your username may be unavailable until the server restarts.\n");
         }
 
+        //broadcasts that this user has disconnected to the other clients
         broadcastDisconnection();
 
-        // Remove the connected users.
+        // Remove the connected users so that the app is fully resetted
         this.app.clearAllUsers();
 
         this.app.postMessage("[Server]: Disconnected succesffuly.\n");
@@ -131,10 +143,13 @@ public class Client implements IClient, Serializable {
      */
     public void sendMessage(String message) {
         try {
+            //saves the message in the server and retrieve its time
             String time = this.remoteProxy.addMessage(this.name, message);
 
             remoteProxy.getUserNames().forEach(user -> {
                 try {
+                    //search each user in the registry and send the message to
+                    //the client
                     IClient client = (IClient) this.registry.lookup("/client/" + user);
                     client.postMessage(time, this.name, message);
 
@@ -155,12 +170,13 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     *
+     * sends the clients connection to every user
      */
     private void broadcastConnection() {
         try {
             this.remoteProxy.getUserNames().forEach(user -> {
                 try {
+                    //searches if the user exists then sending a connected notification to it
                     IClient client = (IClient) this.registry.lookup("/client/" + user);
                     client.connectedNotif(this.name);
 
@@ -188,7 +204,7 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     *
+     * broadcasts a user disconnecting from the server to every user
      */
     private void broadcastDisconnection() {
         try {
@@ -216,7 +232,7 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     *
+     * retrieves every message sent from the server to display it on the client interface
      */
     private void getMessageHistory() {
         this.app.postMessage("[Server]: Loading previous messages...\n");
@@ -241,10 +257,6 @@ public class Client implements IClient, Serializable {
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public boolean isConnected() {
         return isConnected;
     }
