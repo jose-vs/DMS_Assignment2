@@ -8,6 +8,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -27,7 +29,6 @@ public class Client implements IClient, Serializable {
 
     public Client() {
         this.isConnected = false;
-
         /**
          * fetches remote objects
          */
@@ -55,9 +56,9 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     * 
+     *
      * @param name
-     * @return 
+     * @return
      */
     public boolean connectUser(String name) {
 
@@ -93,8 +94,8 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public boolean disconnectUser() {
         this.app.postMessage("[Server]: disconnecting...\n");
@@ -125,8 +126,8 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     * 
-     * @param message 
+     *
+     * @param message
      */
     public void sendMessage(String message) {
         try {
@@ -152,9 +153,9 @@ public class Client implements IClient, Serializable {
             this.app.postMessage("[Server]: Error, cannot send this message.\n");
         }
     }
-    
+
     /**
-     * 
+     *
      */
     private void broadcastConnection() {
         try {
@@ -187,7 +188,7 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     * 
+     *
      */
     private void broadcastDisconnection() {
         try {
@@ -215,7 +216,7 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     * 
+     *
      */
     private void getMessageHistory() {
         this.app.postMessage("[Server]: Loading previous messages...\n");
@@ -241,8 +242,8 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public boolean isConnected() {
         return isConnected;
@@ -268,6 +269,106 @@ public class Client implements IClient, Serializable {
 
         if (!user.equals(this.name)) {
             this.app.postMessage(user + " left the chatroom.\n");
+        }
+    }
+
+    private class RicartArgrwala {
+
+        private int timestamp; // current Lamport timestamp
+        private int pendingReplies; //no. replies pending before cs allowed
+        private boolean ownRequest; //whether this process has requested cs
+        private int ownRequestTimestamp; // used when ownRequest
+        private boolean inCriticalSection; // whether currently in cs
+        private boolean stopRequested;
+
+        public static final String REQUEST = "request";
+        public static final String OKAY = "okay";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String JOIN = "join";
+
+        public Queue msgQueue = new ConcurrentLinkedQueue<>();
+
+        public void receiveMessage(String message, IClient stub) {
+            if (message.startsWith(REQUEST)) {
+                try {
+
+                } catch (NumberFormatException e) {
+
+                }
+            }
+        }
+
+        public void requestCritical() {
+
+        }
+
+        public void releaseCritical() {
+
+        }
+
+        private void increaseTime() {
+            timestamp++;
+        }
+
+        private int getTime() {
+            return timestamp;
+        }
+
+        private void updateTime(int otherTimestamp) {
+            timestamp = Math.max(timestamp, otherTimestamp);
+        }
+    }
+
+    private class ChandyLamport {
+
+    }
+
+    private class Message {
+
+        private String type;
+        private String message;
+        private IClient stub;
+        private int timestamp;
+
+        public Message(String type, IClient stub, int timestamp) {
+            this.type = type;
+            this.stub = stub;
+            this.timestamp = timestamp;
+        }
+
+        public Message(String Type, String message, IClient stub, int timestamp) {
+            this.type = type;
+            this.message = message;
+            this.stub = stub;
+            this.timestamp = timestamp;
+        }
+
+        public IClient getStub() {
+            return this.stub;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return this.type;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return this.message;
+        }
+
+        public void setTimestamp(int timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        public int getTimestamp() {
+            return this.timestamp;
         }
     }
 }
