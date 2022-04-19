@@ -8,6 +8,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -18,7 +20,7 @@ public class Client implements IClient, Serializable {
     private static final long serialVersionUID = 4539829837598745973L;
     public static final String REGISTRY_URL = "localhost";
 
-    //current state of the client 
+    //current state of the client
     private String name;
     private boolean isConnected;
 
@@ -31,7 +33,6 @@ public class Client implements IClient, Serializable {
 
     public Client() {
         this.isConnected = false;
-
         /**
          * fetches remote objects
          */
@@ -71,7 +72,7 @@ public class Client implements IClient, Serializable {
         try {
 
             //create a client stub to send back to the server so that it
-            //can bind the client to the rmi registry 
+            //can bind the client to the rmi registry
             IClient stub = (IClient) UnicastRemoteObject.exportObject(this, 0);
 
             if (!this.remoteProxy.connectUser(name, stub)) {
@@ -95,7 +96,7 @@ public class Client implements IClient, Serializable {
         //send to all clients
         broadcastConnection();
 
-        //retrieve messages sent by other clients 
+        //retrieve messages sent by other clients
         getMessageHistory();
 
         this.app.postMessage("[Server]: You are connected as \"" + this.name + "\".\n");
@@ -128,7 +129,7 @@ public class Client implements IClient, Serializable {
         //broadcasts that this user has disconnected to the other clients
         broadcastDisconnection();
 
-        // Remove the connected users so that the app is fully resetted 
+        // Remove the connected users so that the app is fully resetted
         this.app.clearAllUsers();
 
         this.app.postMessage("[Server]: Disconnected succesffuly.\n");
@@ -147,7 +148,7 @@ public class Client implements IClient, Serializable {
 
             remoteProxy.getUserNames().forEach(user -> {
                 try {
-                    //search each user in the registry and send the message to 
+                    //search each user in the registry and send the message to
                     //the client
                     IClient client = (IClient) this.registry.lookup("/client/" + user);
                     client.postMessage(time, this.name, message);
@@ -203,7 +204,7 @@ public class Client implements IClient, Serializable {
     }
 
     /**
-     * broadcasts a user disconnecting from the server to every user 
+     * broadcasts a user disconnecting from the server to every user
      */
     private void broadcastDisconnection() {
         try {
@@ -280,6 +281,106 @@ public class Client implements IClient, Serializable {
 
         if (!user.equals(this.name)) {
             this.app.postMessage(user + " left the chatroom.\n");
+        }
+    }
+
+    private class RicartArgrwala {
+
+        private int timestamp; // current Lamport timestamp
+        private int pendingReplies; //no. replies pending before cs allowed
+        private boolean ownRequest; //whether this process has requested cs
+        private int ownRequestTimestamp; // used when ownRequest
+        private boolean inCriticalSection; // whether currently in cs
+        private boolean stopRequested;
+
+        public static final String REQUEST = "request";
+        public static final String OKAY = "okay";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String JOIN = "join";
+
+        public Queue msgQueue = new ConcurrentLinkedQueue<>();
+
+        public void receiveMessage(String message, IClient stub) {
+            if (message.startsWith(REQUEST)) {
+                try {
+
+                } catch (NumberFormatException e) {
+
+                }
+            }
+        }
+
+        public void requestCritical() {
+
+        }
+
+        public void releaseCritical() {
+
+        }
+
+        private void increaseTime() {
+            timestamp++;
+        }
+
+        private int getTime() {
+            return timestamp;
+        }
+
+        private void updateTime(int otherTimestamp) {
+            timestamp = Math.max(timestamp, otherTimestamp);
+        }
+    }
+
+    private class ChandyLamport {
+
+    }
+
+    private class Message {
+
+        private String type;
+        private String message;
+        private IClient stub;
+        private int timestamp;
+
+        public Message(String type, IClient stub, int timestamp) {
+            this.type = type;
+            this.stub = stub;
+            this.timestamp = timestamp;
+        }
+
+        public Message(String Type, String message, IClient stub, int timestamp) {
+            this.type = type;
+            this.message = message;
+            this.stub = stub;
+            this.timestamp = timestamp;
+        }
+
+        public IClient getStub() {
+            return this.stub;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return this.type;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return this.message;
+        }
+
+        public void setTimestamp(int timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        public int getTimestamp() {
+            return this.timestamp;
         }
     }
 }

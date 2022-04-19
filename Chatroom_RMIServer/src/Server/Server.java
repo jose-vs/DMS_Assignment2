@@ -19,8 +19,13 @@ public class Server implements IConnections {
 
     private final ArrayList<String> userNames;
     private ArrayList<Message> userMessages;
-    
+    private ArrayList<IClient> clientList;
+
     private static Registry registry;
+
+    //will hold all of the incremented vector timestamps from clients.
+    //the client timestamp index should be the same as index for userName.
+    private ArrayList<Integer> vectorTS;
 
     public Server() {
         this.userNames = new ArrayList<>();
@@ -34,10 +39,11 @@ public class Server implements IConnections {
         }
 
         System.out.println("User connection: " + name);
-        
+
         //binds the client to the registry with the stub retrieved from the client
         //and add it to the list of user names
         registry.rebind("/client/" + name, stub);
+
         userNames.add(name);
         return true;
     }
@@ -59,6 +65,12 @@ public class Server implements IConnections {
                 String time = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern(DATE_FORMAT));
         this.userMessages.add(new Message(time, sender, message));
+
+        for (int i = 0; i < userNames.size(); i++) {
+            if (userNames.contains(sender)) {
+                String tempUser = userNames.get(i);
+            }
+        }
 
         return time;
     }
@@ -96,7 +108,6 @@ public class Server implements IConnections {
 
     }
 
-    
     @Override
     public String appLaunchNotification() throws RemoteException {
         System.out.println("An app connected");
