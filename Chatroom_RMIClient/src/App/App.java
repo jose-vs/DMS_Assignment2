@@ -19,14 +19,13 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-/**
  *
  * @author jcvsa
  */
@@ -50,14 +49,14 @@ public class App {
     private final String FONT = "";
 
     /**
-     * 
+     *
      */
     public final static SimpleAttributeSet ATTR
             = new SimpleAttributeSet();
 
     /**
-     * 
-     * @param client 
+     *
+     * @param client
      */
     public App(Client client) {
 
@@ -68,7 +67,7 @@ public class App {
     }
 
     /**
-     * 
+     *
      */
     private void loadFrame() {
         frame = new JFrame("DSM Assignment 2 - ChatRoom");
@@ -85,8 +84,8 @@ public class App {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     private JPanel loadLeftPanel() {
         GridBagConstraints userConstraints = new GridBagConstraints();
@@ -112,14 +111,14 @@ public class App {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     private JPanel loadUserPanel() {
         // Title.
         JLabel label = new JLabel("Current Users", JLabel.CENTER);
         label.setFont(new Font(FONT, Font.BOLD, 12));
-        JPanel panelMargin = new JPanel(); 
+        JPanel panelMargin = new JPanel();
         panelMargin.setBorder(new EmptyBorder(0, 0, 20, 0));
         panelMargin.add(label);
 
@@ -141,8 +140,8 @@ public class App {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     private JPanel loadButtonPanel() {
         JButton connect = new JButton("Connect");
@@ -180,8 +179,8 @@ public class App {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     private JPanel loadRightPanel() {
 
@@ -209,8 +208,8 @@ public class App {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     private JPanel loadChatPanel() {
         // Message list.
@@ -218,8 +217,11 @@ public class App {
         chatArea.setMargin(new Insets(20, 20, 20, 20));
         chatArea.setFont(new Font(FONT, Font.PLAIN, 12));
         chatArea.setEditable(false);
-        postMessage("DSM Assignment 2 - Chatroom.\n"
-                + "log in by clicking on connect on the bottom left.\n\n");
+        postMessage("""
+                    DSM Assignment 2 - Chatroom.
+                    log in by clicking on connect on the bottom left.
+                    
+                    """);
 
         JScrollPane scrollPane = new JScrollPane(chatArea);
 
@@ -231,8 +233,8 @@ public class App {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     private JPanel loadInputPanel() {
         // User input.
@@ -269,15 +271,16 @@ public class App {
     }
 
     /**
-     * 
+     *
      * @param textField
-     * @return 
+     * @return
      */
     private ActionListener onSend(JTextField textField) {
         return e -> {
             if (!client.isConnected()) {
-                postMessage("[Server]: Please log in to "
-                        + "send messages.\n");
+                postMessage("""
+                            [Server]: Please log in to send messages.
+                            """);
                 textField.setText("");
                 return;
             }
@@ -297,10 +300,10 @@ public class App {
     }
 
     /**
-     * 
+     *
      * @param connectButton
      * @param disconnectButton
-     * @return 
+     * @return
      */
     private ActionListener onConnect(JButton connectButton, JButton disconnectButton) {
         return e -> {
@@ -315,18 +318,19 @@ public class App {
                         disconnectButton.setEnabled(true);
                     }
                 } else {
-                    postMessage("[Server]: Error on connection. "
-                            + "Fields were empty.\n");
+                    postMessage("""
+                                [Server]: Error on connection. Fields were empty.
+                                """);
                 }
             }
         };
     }
 
     /**
-     * 
+     *
      * @param connectButton
      * @param disconnectButton
-     * @return 
+     * @return
      */
     private ActionListener onDisconnection(JButton connectButton,
             JButton disconnectButton) {
@@ -344,38 +348,37 @@ public class App {
     }
 
     /**
-     * 
+     *
      * @param message
-     * @param attributes 
      */
     public void postMessage(String message) {
         Document doc = chatArea.getDocument();
         try {
             doc.insertString(doc.getLength(), message, ATTR);
-        } catch (Exception e) {
+        } catch (BadLocationException e) {
         }
 
         chatArea.setCaretPosition(doc.getLength());
     }
 
     /**
-     * 
-     * @param name 
+     *
+     * @param name
      */
     public void addToAllUsers(String name) {
         this.allUsers.addElement(name);
     }
 
     /**
-     * 
-     * @param name 
+     *
+     * @param name
      */
     public void removeFromAllUsers(String name) {
         this.allUsers.removeElement(name);
     }
 
     /**
-     * 
+     *
      */
     public void clearAllUsers() {
         this.allUsers.clear();

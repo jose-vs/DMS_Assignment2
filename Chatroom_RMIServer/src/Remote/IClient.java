@@ -8,12 +8,14 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 /**
- *
+ * Client Remote Interface
+ * 
  * @author jcvsa
  */
 public interface IClient extends Remote {
     
     /**
+     * posts the message sent by the sender at a time
      * 
      * @param time
      * @param sender
@@ -23,6 +25,7 @@ public interface IClient extends Remote {
     void postMessage (String time, String sender, String message) throws RemoteException; 
     
     /**
+     * notifies that the user has connected to the app. 
      * 
      * @param user
      * @throws RemoteException 
@@ -30,6 +33,7 @@ public interface IClient extends Remote {
     void connectedNotif(String user) throws RemoteException; 
     
     /**
+     * notifies that the user has disconnected from the app
      * 
      * @param user
      * @throws RemoteException 

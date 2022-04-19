@@ -35,6 +35,5 @@ public interface IClient extends Remote {
      * @throws RemoteException 
      */
     void disconnectedNotif(String user) throws RemoteException; 
-            
-    
+               
 }
